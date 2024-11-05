@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from textwrap import dedent
 from pathlib import Path
 import mimetypes
@@ -14,15 +14,15 @@ def to_xml_list(items: list) -> str:
     <list>
         {"\n".join([f"<value>{entry.name}</value>" for entry in items])}
     </list>
-    """)
+    """).strip()
 
 
 def dir_to_mets_xml(files: list) -> str:
-    mets_file_tpl = """
+    mets_file_tpl = dedent("""
         <file ID="{id}" MIMETYPE="{mime_type}" CREATED="{now}" SIZE="{size}">
             <FLocat LOCTYPE="URL" xlink:href="{href}"/>
         </file>
-        """
+        """).strip()
 
     mock_files = [
         mets_file_tpl.format(
@@ -86,6 +86,10 @@ class MockRepository:
         return self.files_for_idn(repository, idn)[oid]
 
 
+class XMLResponse(Response):
+    media_type = "application/xml"
+
+
 app = FastAPI()
 
 
@@ -96,14 +100,14 @@ def read_root():
     )
 
 
-@app.get("/access/repositories")
+@app.get("/access/repositories", response_class=XMLResponse)
 def repositories():
     repo = MockRepository("data")
     # return to_xml_list([repo for repo in next(repo.repos_path.walk())[1] if not repo.startswith(".")])
     return to_xml_list(repo.dirs())
 
 
-@app.get("/access/repositories/{repository}/artifacts")
+@app.get("/access/repositories/{repository}/artifacts", response_class=XMLResponse)
 def artifacts(repository):
     repo = MockRepository("data")
     # return to_xml_list([repo for repo in next(repo.repos_path.walk())[1] if not repo.startswith(".")])
@@ -115,7 +119,10 @@ def object_zip(repository: str, idn: str):
     return "Not implemented, would return a zip stream containing all of the objects"
 
 
-@app.get("/access/repositories/{repository}/artifacts/{idn}/objects")
+@app.get(
+    "/access/repositories/{repository}/artifacts/{idn}/objects",
+    response_class=XMLResponse,
+)
 def objects(repository: str, idn: str):
     repo = MockRepository("data")
     return dir_to_mets_xml(repo.files_for_idn(repository, idn))
