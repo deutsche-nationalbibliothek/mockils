@@ -11,9 +11,9 @@ import mistune
 def to_xml_list(items: list) -> str:
     return dedent(f"""
     <?xml version='1.0' encoding='UTF-8'?>
-    <parent>
-        {"\n".join([f"<entry>{entry.name}</entry>" for entry in items])}
-    </parent>
+    <list>
+        {"\n".join([f"<value>{entry.name}</value>" for entry in items])}
+    </list>
     """)
 
 
@@ -66,10 +66,11 @@ class MockRepository:
     def idn_path(self, repository: str, idn: str) -> Path:
         return self.repos_path / repository / idn
 
-    def repositories(self) -> list:
+    def dirs(self, paths: list = []) -> list:
+        path = Path(self.repos_path, *paths)
         return filter(
             lambda d: not d.name.startswith(".") and d.is_dir(),
-            self.repos_path.iterdir(),
+            path.iterdir(),
         )
 
     def files_for_idn(self, repository, idn):
@@ -99,8 +100,17 @@ def read_root():
 def repositories():
     repo = MockRepository("data")
     # return to_xml_list([repo for repo in next(repo.repos_path.walk())[1] if not repo.startswith(".")])
-    return to_xml_list(repo.repositories())
+    return to_xml_list(repo.dirs())
 
+@app.get("/access/repositories/{repository}/artifacts")
+def artifacts(repository):
+    repo = MockRepository("data")
+    # return to_xml_list([repo for repo in next(repo.repos_path.walk())[1] if not repo.startswith(".")])
+    return to_xml_list(repo.dirs([repository]))
+
+@app.get("/access/repositories/{repository}/artifacts/{idn}")
+def object_zip(repository: str, idn: str):
+    return "Not implemented, would return a zip stream containing all of the objects"
 
 @app.get("/access/repositories/{repository}/artifacts/{idn}/objects")
 def objects(repository: str, idn: str):
