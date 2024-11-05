@@ -1,6 +1,17 @@
 version: '3'
 
 tasks:
+  install:
+    desc: Install the dependencies
+    cmds:
+      - poetry install
+
+  serve:
+    desc: Start a development server
+    aliases: [run]
+    cmds:
+      - poetry run fastapi dev mockils.py
+
   testdata:
     desc: Create some test directory structure
     cmds:
