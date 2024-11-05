@@ -102,15 +102,18 @@ def repositories():
     # return to_xml_list([repo for repo in next(repo.repos_path.walk())[1] if not repo.startswith(".")])
     return to_xml_list(repo.dirs())
 
+
 @app.get("/access/repositories/{repository}/artifacts")
 def artifacts(repository):
     repo = MockRepository("data")
     # return to_xml_list([repo for repo in next(repo.repos_path.walk())[1] if not repo.startswith(".")])
     return to_xml_list(repo.dirs([repository]))
 
+
 @app.get("/access/repositories/{repository}/artifacts/{idn}")
 def object_zip(repository: str, idn: str):
     return "Not implemented, would return a zip stream containing all of the objects"
+
 
 @app.get("/access/repositories/{repository}/artifacts/{idn}/objects")
 def objects(repository: str, idn: str):
