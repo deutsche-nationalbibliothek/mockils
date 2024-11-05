@@ -1,16 +1,18 @@
-from fastapi import FastAPI, FileResponse
+from fastapi import FastAPI
+from fastapi.responses import FileResponse, HTMLResponse
 from textwrap import dedent
 from pathlib import Path
 import mimetypes
 from datetime import datetime
 import importlib
+import mistune
 
 
 def to_xml_list(items: list) -> str:
     return dedent(f"""
     <?xml version='1.0' encoding='UTF-8'?>
     <parent>
-        {"\n".join([f"<entry>{entry}</entry>" for entry in items])}
+        {"\n".join([f"<entry>{entry.name}</entry>" for entry in items])}
     </parent>
     """)
 
@@ -26,8 +28,8 @@ def dir_to_mets_xml(files: list) -> str:
         mets_file_tpl.format(
             id=id,
             mime_type=mimetypes.guess_type(file),
-            size=Path(file).stat().st_size,
-            href=file,
+            size=file.stat().st_size,
+            href=file.name,
             now=datetime.now().isoformat(),
         )
         for id, file in enumerate(files)
@@ -59,43 +61,57 @@ class MockRepository:
 
     @property
     def repos_path(self) -> Path:
-        return self.base_path / "repository"
+        return self.base_path
 
     def idn_path(self, repository: str, idn: str) -> Path:
         return self.repos_path / repository / idn
 
     def repositories(self) -> list:
-        return filter(lambda d: not d.startswith("."), next(self.repos_path.walk())[1])
+        return filter(
+            lambda d: not d.name.startswith(".") and d.is_dir(),
+            self.repos_path.iterdir(),
+        )
 
     def files_for_idn(self, repository, idn):
-        return next(self.idn_path(repository, idn).walk())[2].sort(key=lambda f: f.name)
+        return sorted(
+            filter(
+                lambda f: not f.name.startswith(".") and f.is_file(),
+                self.idn_path(repository, idn).iterdir(),
+            ),
+            key=lambda f: f.name,
+        )
 
     def file_for_idn_oid(self, repository, idn, oid):
-        return self.idn_path(repository, idn) / self.files_for_idn(repository, idn)[oid]
+        return self.files_for_idn(repository, idn)[oid]
 
 
 app = FastAPI()
-repo = MockRepository("data")
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def read_root():
-    return FileResponse(
+    return mistune.html(
         importlib.resources.read_text(__name__, "README.md", encoding="utf-8")
     )
 
 
-@app.get("/repositories")
+@app.get("/access/repositories")
 def repositories():
+    repo = MockRepository("data")
     # return to_xml_list([repo for repo in next(repo.repos_path.walk())[1] if not repo.startswith(".")])
     return to_xml_list(repo.repositories())
 
 
-@app.get("/repositories/{repository}/artifacts/{idn}/objects")
+@app.get("/access/repositories/{repository}/artifacts/{idn}/objects")
 def objects(repository: str, idn: str):
+    repo = MockRepository("data")
     return dir_to_mets_xml(repo.files_for_idn(repository, idn))
 
 
-@app.get("/repositories/{repository}/artifacts/{idn}/objects/{oid}")
+@app.get(
+    "/access/repositories/{repository}/artifacts/{idn}/objects/{oid}",
+    response_class=FileResponse,
+)
 def object(repository: str, idn: str, oid: int):
-    return FileResponse(repo.file_for_idn_oid(repository, idn, oid))
+    repo = MockRepository("data")
+    return repo.file_for_idn_oid(repository, idn, oid)

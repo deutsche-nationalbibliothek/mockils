@@ -8,9 +8,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-fastapi = "^0.115.4"
+fastapi = {extras = ["standard"], version = "^0.115.4"}
 click = "^8.1.7"
 loguru = "^0.7.2"
+mistune = "^3.0.2"
 
 
 [tool.poetry.group.dev.dependencies]
