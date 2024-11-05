@@ -1,0 +1,12 @@
+version: '3'
+
+tasks:
+  testdata:
+    desc: Create some test directory structure
+    cmds:
+      - |
+        target=data/warc/12345
+        mkdir -p $target
+        cd $target
+        echo "Hallo" > file.txt
+        echo "large data" | gzip > large.txt.gz

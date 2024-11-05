@@ -17,3 +17,5 @@ data:
   - …
 - repositoryB
 ```
+
+You can create it with `task testdata` if you have [task](https://taskfile.dev/) installed.
