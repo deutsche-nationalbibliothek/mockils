@@ -21,3 +21,15 @@ tasks:
         cd $target
         echo "Hallo" > file.txt
         echo "large data" | gzip > large.txt.gz
+
+  build:
+    desc: Build the container image
+    cmds:
+      - podman build -t mockils .
+
+  format:
+    desc: Format the code
+    aliases: ["ruff"]
+    cmds:
+      - poetry run ruff format
+      - poetry run ruff check --fix
