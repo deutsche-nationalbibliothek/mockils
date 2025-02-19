@@ -15,7 +15,7 @@ tasks:
   serve:container:
     desc: Start the server as container
     cmds:
-      - podman run --rm -p 8080:8080 localhost/mockils
+      - podman run -d --rm -p 8080:8080 ghcr.io/deutsche-nationalbibliothek/mockils:main
 
   testdata:
     desc: Create some test directory structure
