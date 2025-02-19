@@ -8,14 +8,14 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-fastapi = {extras = ["standard"], version = "^0.115.4"}
 loguru = "^0.7.2"
 mistune = "^3.0.2"
-
+uvicorn = "^0.34.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
 ruff = "^0.7.2"
+fastapi = {extras = ["standard"], version = "^0.115.8"}
 
 [build-system]
 requires = ["poetry-core"]

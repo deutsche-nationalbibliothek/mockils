@@ -25,4 +25,4 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 COPY mockils.py ./mockils.py
 COPY README.md ./README.md
 
-CMD ["fastapi", "run", "mockils.py", "--port", "80"]
+CMD ["uvicorn", "mockils:app", "--host", "0.0.0.0", "--port", "8080"]
