@@ -12,6 +12,11 @@ tasks:
     cmds:
       - poetry run fastapi dev mockils.py
 
+  serve:container:
+    desc: Start the server as container
+    cmds:
+      - podman run --rm -p 8080:8080 localhost/mockils
+
   testdata:
     desc: Create some test directory structure
     cmds:
