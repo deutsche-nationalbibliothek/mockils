@@ -6,6 +6,7 @@ import mimetypes
 from datetime import datetime
 import importlib
 import mistune
+import os
 
 
 def to_xml_list(items: list) -> str:
@@ -90,7 +91,7 @@ class XMLResponse(Response):
     media_type = "application/xml"
 
 
-app = FastAPI()
+app = FastAPI(data_path=os.getenv("MOCKILS_DATA_PATH", "data"))
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -102,14 +103,14 @@ def read_root():
 
 @app.get("/access/repositories", response_class=XMLResponse)
 def repositories():
-    repo = MockRepository("data")
+    repo = MockRepository(app.data_path)
     # return to_xml_list([repo for repo in next(repo.repos_path.walk())[1] if not repo.startswith(".")])
     return to_xml_list(repo.dirs())
 
 
 @app.get("/access/repositories/{repository}/artifacts", response_class=XMLResponse)
 def artifacts(repository):
-    repo = MockRepository("data")
+    repo = MockRepository(app.data_path)
     # return to_xml_list([repo for repo in next(repo.repos_path.walk())[1] if not repo.startswith(".")])
     return to_xml_list(repo.dirs([repository]))
 
@@ -124,7 +125,7 @@ def object_zip(repository: str, idn: str):
     response_class=XMLResponse,
 )
 def objects(repository: str, idn: str):
-    repo = MockRepository("data")
+    repo = MockRepository(app.data_path)
     return dir_to_mets_xml(repo.files_for_idn(repository, idn))
 
 
@@ -133,5 +134,5 @@ def objects(repository: str, idn: str):
     response_class=FileResponse,
 )
 def object(repository: str, idn: str, oid: int):
-    repo = MockRepository("data")
+    repo = MockRepository(app.data_path)
     return repo.file_for_idn_oid(repository, idn, oid)

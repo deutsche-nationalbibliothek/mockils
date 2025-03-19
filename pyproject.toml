@@ -17,6 +17,11 @@ uvicorn = "^0.34.0"
 pytest = "^8.3.3"
 ruff = "^0.7.2"
 fastapi = {extras = ["standard"], version = "^0.115.8"}
+httpx = "^0.28.1"
+aras-py = {git = "https://github.com/deutsche-nationalbibliothek/aras-py"}
+
+[tool.pytest.ini_options]
+addopts="--cov=mockils --cov-report term-missing"
 
 [build-system]
 requires = ["poetry-core"]

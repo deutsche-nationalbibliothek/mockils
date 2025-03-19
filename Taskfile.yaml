@@ -9,6 +9,8 @@ tasks:
   serve:
     desc: Start a development server
     aliases: [run]
+    env:
+      MOCKILS_DATA_PATH: test_data
     cmds:
       - poetry run fastapi dev mockils.py
 
@@ -17,11 +19,16 @@ tasks:
     cmds:
       - podman run -d --rm -p 8080:8080 ghcr.io/deutsche-nationalbibliothek/mockils:main
 
+  test:
+    desc: Run pytest
+    cmds:
+      - poetry run pytest
+
   testdata:
     desc: Create some test directory structure
     cmds:
       - |
-        target=data/warc/12345
+        target=test_data/warc/12345
         mkdir -p $target
         cd $target
         echo "Hallo" > file.txt
